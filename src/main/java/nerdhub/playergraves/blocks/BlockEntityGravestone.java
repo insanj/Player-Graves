@@ -17,7 +17,7 @@ public class BlockEntityGravestone extends BlockEntity implements Tickable {
 
     public String playerName = "";
     public ListTag playerInv = new ListTag();
-    public CompoundTag playerExp = new CompoundTag();
+    public ListTag playerExp = new ListTag();
 
     public MobSpawnerLogic logic = new MobSpawnerLogic() {
         @Override
@@ -66,7 +66,7 @@ public class BlockEntityGravestone extends BlockEntity implements Tickable {
         super.fromTag(compoundTag);
         this.playerName = compoundTag.getString("playername");
         this.playerInv = compoundTag.getList("inventory", NbtType.COMPOUND);
-        this.playerExp = compoundTag.getCompound("experience");
+        this.playerExp = compoundTag.getList("experience", NbtType.COMPOUND);
         logic.deserialize(compoundTag);
     }
 

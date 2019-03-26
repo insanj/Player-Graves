@@ -56,6 +56,8 @@ public class PlayerGraves implements ModInitializer {
                                                 if (blockEntity instanceof BlockEntityGravestone) {
                                                     ((BlockEntityGravestone) blockEntity).playerName = targetPlayer.getEntityName();
                                                     ((BlockEntityGravestone) blockEntity).playerInv = persistentState.getPlayerInventory(targetPlayer);
+                                                    ((BlockEntityGravestone) blockEntity).playerExp = persistentState.getPlayerExperience(targetPlayer);
+
                                                     blockEntity.markDirty();
                                                     world.updateListeners(deathPos, world.getBlockState(deathPos), world.getBlockState(deathPos), 3);
                                                 }

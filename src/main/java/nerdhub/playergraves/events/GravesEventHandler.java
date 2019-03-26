@@ -4,12 +4,15 @@ import nerdhub.playergraves.PlayerGraves;
 import nerdhub.playergraves.blocks.BlockEntityGravestone;
 import nerdhub.playergraves.blocks.BlockGravestone;
 import nerdhub.playergraves.data.PlayerInventoryPersistentState;
+import nerdhub.playergraves.utils.ExperienceHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.TextFormat;
@@ -21,36 +24,41 @@ public class GravesEventHandler {
 
     public static void registerEventHandlers() {
         EntityDeathDropsCallback.EVENT.register((world, livingEntity, damageSource, ci) -> {
-            if(livingEntity instanceof PlayerEntity && !livingEntity.world.getGameRules().getBoolean("keepInventory") && !((PlayerEntity) livingEntity).inventory.isInvEmpty()) {
-                BlockPos deathPos = findValidPos(livingEntity.world, livingEntity.getBlockPos());
-                if(deathPos != null) {
-                    if(livingEntity.world.isAir(deathPos.down()) || livingEntity.world.getBlockState(deathPos.down()).getBlock() instanceof FluidBlock || livingEntity.world.getBlockState(deathPos.down()).getBlock() == Blocks.TALL_GRASS) {
-                        livingEntity.world.setBlockState(deathPos.down(), Blocks.DIRT.getDefaultState());
-                    }
-                    livingEntity.world.setBlockState(deathPos, PlayerGraves.BLOCK_GRAVESTONE.getDefaultState().with(BlockGravestone.FACING, livingEntity.getHorizontalFacing().getOpposite()));
-                    BlockEntity blockEntity = livingEntity.world.getBlockEntity(deathPos);
+          boolean invAndExpEmpty = ((PlayerEntity) livingEntity).inventory.isInvEmpty() && ((PlayerEntity) livingEntity).experience <= 0;
+          if(livingEntity instanceof PlayerEntity && !livingEntity.world.getGameRules().getBoolean("keepInventory")) {
+            if (!invAndExpEmpty) {
+              BlockPos deathPos = findValidPos(livingEntity.world, livingEntity.getBlockPos());
+              if(deathPos != null) {
+                  if(livingEntity.world.isAir(deathPos.down()) || livingEntity.world.getBlockState(deathPos.down()).getBlock() instanceof FluidBlock || livingEntity.world.getBlockState(deathPos.down()).getBlock() == Blocks.TALL_GRASS) {
+                      livingEntity.world.setBlockState(deathPos.down(), Blocks.DIRT.getDefaultState());
+                  }
+                  livingEntity.world.setBlockState(deathPos, PlayerGraves.BLOCK_GRAVESTONE.getDefaultState().with(BlockGravestone.FACING, livingEntity.getHorizontalFacing().getOpposite()));
+                  BlockEntity blockEntity = livingEntity.world.getBlockEntity(deathPos);
 
-                    if(blockEntity instanceof BlockEntityGravestone) {
-                        ((BlockEntityGravestone) blockEntity).playerName = livingEntity.getEntityName();
-                        ((BlockEntityGravestone) blockEntity).playerInv = ((PlayerEntity) livingEntity).inventory.serialize(new ListTag());
-                        blockEntity.markDirty();
+                  if(blockEntity instanceof BlockEntityGravestone) {
+                      ((BlockEntityGravestone) blockEntity).playerName = livingEntity.getEntityName();
+                      ((BlockEntityGravestone) blockEntity).playerInv = ((PlayerEntity) livingEntity).inventory.serialize(new ListTag());
+                      ((BlockEntityGravestone) blockEntity).playerExp = ExperienceHelper.serialize((PlayerEntity)livingEntity);
 
-                        if(!livingEntity.world.isClient) {
-                            ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity) livingEntity;
-                            PlayerInventoryPersistentState persistentState = PlayerInventoryPersistentState.get(serverPlayerEntity.getServerWorld());
-                            persistentState.savePlayerInventory(serverPlayerEntity);
-                            serverPlayerEntity.addChatMessage(new TranslatableTextComponent("graves.spawnedgrave", deathPos.getX(), deathPos.getY(), deathPos.getZ()).setStyle(new Style().setColor(TextFormat.GOLD)), false);
-                        }
-                        livingEntity.world.updateListeners(deathPos, livingEntity.world.getBlockState(deathPos), livingEntity.world.getBlockState(deathPos), 3);
-                        ci.cancel();
-                    }
-                } else {
-                  if (livingEntity instanceof PlayerEntity) {
-                    ((PlayerEntity)livingEntity).addChatMessage(new TranslatableTextComponent("graves.nullspawn").setStyle(new Style().setColor(TextFormat.LIGHT_PURPLE)), false);
+                      blockEntity.markDirty();
+
+                      if(!livingEntity.world.isClient) {
+                          ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity) livingEntity;
+                          PlayerInventoryPersistentState persistentState = PlayerInventoryPersistentState.get(serverPlayerEntity.getServerWorld());
+                          persistentState.savePlayerInventory(serverPlayerEntity);
+                          serverPlayerEntity.addChatMessage(new TranslatableTextComponent("graves.spawnedgrave", deathPos.getX(), deathPos.getY(), deathPos.getZ()).setStyle(new Style().setColor(TextFormat.GOLD)), false);
+                      }
+                      livingEntity.world.updateListeners(deathPos, livingEntity.world.getBlockState(deathPos), livingEntity.world.getBlockState(deathPos), 3);
+                      ci.cancel();
                   }
                 }
-            }
-        });
+              } else {
+                if (livingEntity instanceof PlayerEntity) {
+                  ((PlayerEntity)livingEntity).addChatMessage(new TranslatableTextComponent("graves.nullspawn").setStyle(new Style().setColor(TextFormat.LIGHT_PURPLE)), false);
+                }
+              }
+          }
+      });
     }
 
     public static BlockPos findValidPos(World world, BlockPos pos) {
