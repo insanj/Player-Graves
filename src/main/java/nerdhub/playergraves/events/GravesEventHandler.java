@@ -24,8 +24,8 @@ public class GravesEventHandler {
 
     public static void registerEventHandlers() {
         EntityDeathDropsCallback.EVENT.register((world, livingEntity, damageSource, ci) -> {
-          boolean invAndExpEmpty = ((PlayerEntity) livingEntity).inventory.isInvEmpty() && ((PlayerEntity) livingEntity).experience <= 0;
           if(livingEntity instanceof PlayerEntity && !livingEntity.world.getGameRules().getBoolean("keepInventory")) {
+            boolean invAndExpEmpty = ((PlayerEntity) livingEntity).inventory.isInvEmpty() && ((PlayerEntity) livingEntity).experience <= 0;
             if (!invAndExpEmpty) {
               BlockPos deathPos = findValidPos(livingEntity.world, livingEntity.getBlockPos());
               if(deathPos != null) {
