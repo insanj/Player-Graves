@@ -17,6 +17,8 @@ public class BlockEntityGravestone extends BlockEntity implements Tickable {
 
     public String playerName = "";
     public ListTag playerInv = new ListTag();
+    public CompoundTag playerExp = new CompoundTag();
+
     public MobSpawnerLogic logic = new MobSpawnerLogic() {
         @Override
         public void setSpawnEntry(MobSpawnerEntry entry) {
@@ -54,6 +56,7 @@ public class BlockEntityGravestone extends BlockEntity implements Tickable {
         super.toTag(compoundTag);
         compoundTag.putString("playername", this.playerName);
         compoundTag.put("inventory", playerInv);
+        compoundTag.put("experience", playerExp);
         logic.serialize(compoundTag);
         return compoundTag;
     }
@@ -63,6 +66,7 @@ public class BlockEntityGravestone extends BlockEntity implements Tickable {
         super.fromTag(compoundTag);
         this.playerName = compoundTag.getString("playername");
         this.playerInv = compoundTag.getList("inventory", NbtType.COMPOUND);
+        this.playerExp = compoundTag.getCompound("experience");
         logic.deserialize(compoundTag);
     }
 

@@ -21,10 +21,9 @@ public class GravesEventHandler {
 
     public static void registerEventHandlers() {
         EntityDeathDropsCallback.EVENT.register((world, livingEntity, damageSource, ci) -> {
-            if(livingEntity instanceof PlayerEntity && !livingEntity.world.getGameRules().getBoolean("keepInventory")) {
-                BlockPos deathPos = findValidPos(livingEntity.world, livingEntity.getPos());
-
-                if(deathPos != null && !((PlayerEntity) livingEntity).inventory.isInvEmpty()) {
+            if(livingEntity instanceof PlayerEntity && !livingEntity.world.getGameRules().getBoolean("keepInventory") && !((PlayerEntity) livingEntity).inventory.isInvEmpty()) {
+                BlockPos deathPos = findValidPos(livingEntity.world, livingEntity.getBlockPos());
+                if(deathPos != null) {
                     if(livingEntity.world.isAir(deathPos.down()) || livingEntity.world.getBlockState(deathPos.down()).getBlock() instanceof FluidBlock || livingEntity.world.getBlockState(deathPos.down()).getBlock() == Blocks.TALL_GRASS) {
                         livingEntity.world.setBlockState(deathPos.down(), Blocks.DIRT.getDefaultState());
                     }
@@ -45,6 +44,10 @@ public class GravesEventHandler {
                         livingEntity.world.updateListeners(deathPos, livingEntity.world.getBlockState(deathPos), livingEntity.world.getBlockState(deathPos), 3);
                         ci.cancel();
                     }
+                } else {
+                  if (livingEntity instanceof PlayerEntity) {
+                    ((PlayerEntity)livingEntity).addChatMessage(new TranslatableTextComponent("graves.nullspawn").setStyle(new Style().setColor(TextFormat.LIGHT_PURPLE)), false);
+                  }
                 }
             }
         });

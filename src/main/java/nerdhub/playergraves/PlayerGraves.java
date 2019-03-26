@@ -47,7 +47,7 @@ public class PlayerGraves implements ModInitializer {
 
                                     if (targetPlayer != null) {
                                         if (persistentState.isPlayerInventorySaved(targetPlayer)) {
-                                            BlockPos deathPos = GravesEventHandler.findValidPos(world, senderPlayer.getPos());
+                                            BlockPos deathPos = GravesEventHandler.findValidPos(world, senderPlayer.getBlockPos());
 
                                             if (deathPos != null) {
                                                 world.setBlockState(deathPos, PlayerGraves.BLOCK_GRAVESTONE.getDefaultState().with(BlockGravestone.FACING, senderPlayer.getHorizontalFacing().getOpposite()));

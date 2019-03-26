@@ -2,6 +2,7 @@ package nerdhub.playergraves.data;
 
 import com.google.common.collect.Maps;
 import nerdhub.playergraves.utils.InventoryHelper;
+import nerdhub.playergraves.utils.ExperienceHelper;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -14,19 +15,26 @@ import net.minecraft.world.PersistentState;
 import java.util.*;
 
 public class PlayerInventoryPersistentState extends PersistentState {
+    static final String PERSISTENT_STATE_ID = "PlayerGraves110InventoryPersistentState";
 
     private Map<UUID, ListTag> inventories = Maps.newHashMap();
+    private Map<UUID, CompoundTag> experiences = Maps.newHashMap();
 
     public PlayerInventoryPersistentState() {
-        super("PlayerGravesInventoryPersistentState");
+        super(PlayerInventoryPersistentState.PERSISTENT_STATE_ID);
     }
 
     public void recoverPlayerInventory(ServerPlayerEntity playerEntity) {
         InventoryHelper.deserializeInv(playerEntity, getPlayerInventory(playerEntity));
+        ExperienceHelper.deserializeExp(playerEntity, getPlayerExperience(playerEntity));
     }
 
     public ListTag getPlayerInventory(ServerPlayerEntity playerEntity) {
         return this.inventories.get(playerEntity.getUuid());
+    }
+
+    public CompoundTag getPlayerExperience(ServerPlayerEntity playerEntity) {
+      return this.experiences.get(playerEntity.getUuid());
     }
 
     public boolean isPlayerInventorySaved(ServerPlayerEntity playerEntity) {
@@ -35,11 +43,18 @@ public class PlayerInventoryPersistentState extends PersistentState {
 
     public void savePlayerInventory(ServerPlayerEntity playerEntity) {
         this.inventories.put(playerEntity.getUuid(), playerEntity.inventory.serialize(new ListTag()));
+
+        CompoundTag expTag = new CompoundTag();
+        expTag.putInt("experience", playerEntity.experience); //i
+        expTag.putInt("experienceLevel", playerEntity.experienceLevel); //i
+        expTag.putFloat("experienceBarProgress", playerEntity.experienceBarProgress); //f
+
+        this.experiences.put(playerEntity.getUuid(), expTag);
         this.markDirty();
     }
 
     public static PlayerInventoryPersistentState get(ServerWorld world) {
-        return world.getPersistentStateManager().getOrCreate(PlayerInventoryPersistentState::new, "PlayerGravesInventoryPersistentState");
+        return world.getPersistentStateManager().getOrCreate(PlayerInventoryPersistentState::new, PlayerInventoryPersistentState.PERSISTENT_STATE_ID);
     }
 
     @Override
@@ -52,6 +67,15 @@ public class PlayerInventoryPersistentState extends PersistentState {
             ListTag inventoryTag = tag.getList("inventory", NbtType.COMPOUND);
             inventories.put(uuid, inventoryTag);
         }
+
+        listTag = compoundTag.getList("experiences", NbtType.COMPOUND);
+
+        for (Iterator<Tag> it = listTag.iterator(); it.hasNext();) {
+            CompoundTag tag = (CompoundTag) it.next();
+            UUID uuid = TagHelper.deserializeUuid(tag.getCompound("uuid"));
+            CompoundTag expTag = tag.getCompound("experience");
+            experiences.put(uuid, expTag);
+        }
     }
 
     @Override
@@ -62,9 +86,21 @@ public class PlayerInventoryPersistentState extends PersistentState {
             CompoundTag tag = new CompoundTag();
             tag.put("uuid", TagHelper.serializeUuid(uuid));
             tag.put("inventory", inventories.get(uuid));
+            listTag.add(tag);
         }
 
         compoundTag.put("inventories", listTag);
+
+        ListTag listExpTag = new ListTag();
+
+        for (UUID uuid : experiences.keySet()) {
+            CompoundTag tag = new CompoundTag();
+            tag.put("uuid", TagHelper.serializeUuid(uuid));
+            tag.put("experience", experiences.get(uuid));
+            listExpTag.add(tag);
+        }
+
+        compoundTag.put("experiences", listExpTag);
 
         return compoundTag;
     }

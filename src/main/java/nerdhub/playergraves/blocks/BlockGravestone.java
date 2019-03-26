@@ -2,6 +2,7 @@ package nerdhub.playergraves.blocks;
 
 import nerdhub.playergraves.data.PlayerInventoryPersistentState;
 import nerdhub.playergraves.utils.InventoryHelper;
+import nerdhub.playergraves.utils.ExperienceHelper;
 import net.fabricmc.fabric.api.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -43,6 +44,7 @@ public class BlockGravestone extends BlockWithEntity {
 
                 if(gravestone.playerInv != null) {
                     InventoryHelper.deserializeInv(playerEntity, gravestone.playerInv);
+                    ExperienceHelper.deserializeExp(playerEntity, gravestone.playerExp);
                     world.setBlockState(pos, Blocks.AIR.getDefaultState());
                     return;
                 }else if (persistentState.isPlayerInventorySaved(serverPlayerEntity)) {
