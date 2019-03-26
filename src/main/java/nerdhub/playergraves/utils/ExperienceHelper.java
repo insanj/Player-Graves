@@ -15,32 +15,26 @@ import net.minecraft.text.TranslatableTextComponent;
 public class ExperienceHelper {
 
     public static void deserializeExp(PlayerEntity player, ListTag expTag) {
-      int exp = expTag.getInt(0);
-      int expLevel = expTag.getInt(1);
-      float expBar = expTag.getFloat(2);
+      CompoundTag metadata = expTag.getCompoundTag(0);
+      int expLevel = metadata.getInt("experienceLevel");
 
-      player.addChatMessage(new TranslatableTextComponent(String.format("%03d %03d %f", exp, expLevel, expBar)).setStyle(new Style().setColor(TextFormat.LIGHT_PURPLE)), false);
+      // player.addChatMessage(new TranslatableTextComponent(String.format("deserializing experience: %03d", expLevel)).setStyle(new Style().setColor(TextFormat.LIGHT_PURPLE)), false);
 
       if (!player.world.isClient) {
-        player.world.spawnEntity(new ExperienceOrbEntity(player.world, player.x, player.y, player.z, exp));
+        player.world.spawnEntity(new ExperienceOrbEntity(player.world, player.x, player.y, player.z, expLevel));
       } else {
-        player.addExperience(exp);
+        player.addExperience(expLevel);
       }
     }
 
     public static ListTag serialize(PlayerEntity player) {
-      player.addChatMessage(new TranslatableTextComponent(String.format("serializing experience: %03d %03d %f", player.experience, player.experienceLevel, player.experienceBarProgress)).setStyle(new Style().setColor(TextFormat.LIGHT_PURPLE)), false);
+      // player.addChatMessage(new TranslatableTextComponent(String.format("serializing experience: %03d %03d %f", player.experience, player.experienceLevel, player.experienceBarProgress)).setStyle(new Style().setColor(TextFormat.LIGHT_PURPLE)), false);
 
-      ListTag exp = new ListTag();
+      CompoundTag metadata = new CompoundTag();
+      metadata.putInt("experienceLevel", player.experienceLevel);
 
-      IntTag experienceTag = new IntTag(player.experience);
-      IntTag experienceLevelTag = new IntTag(player.experienceLevel);
-      FloatTag experienceBarProgressTag = new FloatTag(player.experienceBarProgress);
-
-      exp.add(experienceTag);
-      exp.add(experienceLevelTag);
-      exp.add(experienceBarProgressTag);
-
-      return exp;
+      ListTag listTag = new ListTag();
+      listTag.add(metadata);
+      return listTag;
     }
 }
