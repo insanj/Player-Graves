@@ -17,7 +17,7 @@ public class ExperienceHelper {
 
     public static void deserializeExp(PlayerEntity player, ListTag expTag) {
       CompoundTag metadata = expTag.getCompoundTag(0);
-      int experience = metadata.getInt("experience");
+      int experience = Integer.parseInt(metadata.getString("experienceString"));
 
     /*  if (experience > 7) {
         experience -= 7;
@@ -42,11 +42,12 @@ public class ExperienceHelper {
 
     public static ListTag serialize(PlayerEntity player, ListTag listTag) {
       int experience = player.experienceLevel;
+      String expString = Integer.toString(experience);
 
-      System.out.println(String.format("[Player-Graves] Serializing experience from player %s: %d (this happens twice; once for the Gravestone which immediately spawns, once for the save file in case the user wishes to use the recover command)", player.toString(), experience));
+      System.out.println(String.format("[Player-Graves] Serializing experience from player %s: %s (this happens twice; once for the Gravestone which immediately spawns, once for the save file in case the user wishes to use the recover command)", player.toString(), expString));
 
       CompoundTag metadata = new CompoundTag();
-      metadata.putInt("experience", experience);
+      metadata.putString("experienceString", expString);
 
       listTag.add(metadata);
       return listTag;
