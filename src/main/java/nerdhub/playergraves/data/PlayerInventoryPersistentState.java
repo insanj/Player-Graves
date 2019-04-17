@@ -48,7 +48,7 @@ public class PlayerInventoryPersistentState extends PersistentState {
 
     public void savePlayerInventory(ServerPlayerEntity playerEntity) {
         this.inventories.put(playerEntity.getUuid(), playerEntity.inventory.serialize(new ListTag()));
-        this.experiences.put(playerEntity.getUuid(), ExperienceHelper.serialize(playerEntity));
+        this.experiences.put(playerEntity.getUuid(), ExperienceHelper.serialize(playerEntity, new ListTag()));
         
         this.markDirty();
     }

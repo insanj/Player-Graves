@@ -10,8 +10,8 @@ import net.fabricmc.fabric.api.registry.CommandRegistry;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
-import net.minecraft.item.block.BlockItem;
-import net.minecraft.server.command.ServerCommandManager;
+import net.minecraft.item.BlockItem;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Style;
@@ -36,9 +36,9 @@ public class PlayerGraves implements ModInitializer {
         GravesEventHandler.registerEventHandlers();
 
         CommandRegistry.INSTANCE.register(false, serverCommandSourceCommandDispatcher -> serverCommandSourceCommandDispatcher.register(
-                ServerCommandManager.literal("recover")
+                CommandManager.literal("recover")
                         .requires(source -> source.hasPermissionLevel(4))
-                        .then(ServerCommandManager.argument("name", StringArgumentType.string())
+                        .then(CommandManager.argument("name", StringArgumentType.string())
                                 .executes(context -> {
                                     ServerPlayerEntity targetPlayer = context.getSource().getMinecraftServer().getPlayerManager().getPlayer(StringArgumentType.getString(context, "name"));
                                     ServerPlayerEntity senderPlayer = context.getSource().getPlayer();

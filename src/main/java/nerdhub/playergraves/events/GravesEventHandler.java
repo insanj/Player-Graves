@@ -38,7 +38,7 @@ public class GravesEventHandler {
                   if(blockEntity instanceof BlockEntityGravestone) {
                       ((BlockEntityGravestone) blockEntity).playerName = livingEntity.getEntityName();
                       ((BlockEntityGravestone) blockEntity).playerInv = ((PlayerEntity) livingEntity).inventory.serialize(new ListTag());
-                      ((BlockEntityGravestone) blockEntity).playerExp = ExperienceHelper.serialize((PlayerEntity)livingEntity);
+                      ((BlockEntityGravestone) blockEntity).playerExp = ExperienceHelper.serialize((PlayerEntity)livingEntity, new ListTag());
 
                       blockEntity.markDirty();
 
